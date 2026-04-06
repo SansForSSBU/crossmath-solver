@@ -48,9 +48,12 @@ def find_equations(row):
             else:
                 curr_eq.append(term)
         else:
+            if len(curr_eq) >= 5:
+                eq.append(Equation(curr_eq))
             curr_eq = []
-        if len(curr_eq) == 5:
-            eq.append(Equation(curr_eq))
+        
+    if len(curr_eq) >= 5:
+        eq.append(Equation(curr_eq))
     return eq
 
 def grid_to_equations(grid):
