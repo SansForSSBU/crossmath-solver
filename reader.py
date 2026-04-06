@@ -101,6 +101,8 @@ def do_ocr(img):
     result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
     result = result.strip()
     if result != '':
+        if result == 'x':
+            return '*'
         return result
     results = reader.readtext(img, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789 ')
     if len(results) > 0:
