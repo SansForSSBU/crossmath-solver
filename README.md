@@ -18,12 +18,10 @@ From root of repository:
 
 # Usage
 
-From root of repository;
-
-Replace puzzle1.png with your puzzle.
+From root of repository and whilst inside venv:
 
 `python3 -m src.main <puzzle_image_path>`
 
 # Testing
 
-python3 -m pytest
+python3 -m pytest -s
