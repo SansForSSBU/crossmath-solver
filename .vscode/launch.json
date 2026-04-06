@@ -19,7 +19,7 @@
             "request": "launch",
             "module": "src.main",
             "console": "integratedTerminal",
-            "args": "test/puzzles/2.png"
+            "args": "test/puzzles/9.png"
         }
     ]
 }
