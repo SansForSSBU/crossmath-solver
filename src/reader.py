@@ -44,7 +44,7 @@ def get_midpoint(square):
     center = (x + w // 2, y + h // 2)
     return center
 
-def get_tiles(img):
+def get_tiles(img, debug=True):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
@@ -74,6 +74,17 @@ def get_tiles(img):
         if not all(c > 245 for c in avg_color):
             final_squares.append(square)
 
+    if debug:
+        output_img = img.copy()
+        for square in final_squares:
+            x, y, w, h = cv2.boundingRect(square)
+            cv2.rectangle(output_img, (x, y), (x+w, y+h), (0, 0, 255), 2)
+
+        img_rgb = cv2.cvtColor(output_img, cv2.COLOR_BGR2RGB)
+        
+        pil_img = Image.fromarray(img_rgb)
+        pil_img.save("output_file.png")
+
     return final_squares
 
 def prepare_for_ocr(crop, inset=6):
@@ -88,14 +99,16 @@ def prepare_for_ocr(crop, inset=6):
 
 reader = easyocr.Reader(['en'])
 image_idx = 0
-def do_ocr(img, can_be_operator=True, debug=False):
+def do_ocr(img, can_be_operator=True, debug_nums=True):
     op_crop, num_crop = img
     global image_idx
     op_crop = Image.fromarray(op_crop)
     op_crop = ImageOps.expand(op_crop, border=(0, 10, 0, 10), fill='white')
-    if debug:
-        op_crop.save(f"test_images/{image_idx}.png")
+    if debug_nums:
+        debug_num = Image.fromarray(num_crop)
+        debug_num.save(f"test_images/n{image_idx}.png")
         image_idx += 1
+
     if can_be_operator:
         result = pytesseract.image_to_string(op_crop, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=')
         result = result.strip()
