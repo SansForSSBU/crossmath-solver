@@ -28,11 +28,18 @@ class Equation():
             else:
                 thing.append(term)
         
-        symbol = thing[1]
-        a = thing[0]
-        b = thing[2]
-        c = thing[4]
-        return operations[symbol](a,b) == c
+        accumulator = thing[0]
+        idx = 1
+        while idx < len(thing):
+            if idx % 2 == 1:
+                operation = thing[idx]
+            else:
+                operand = thing[idx]
+                if operation == "=":
+                    return accumulator == operand
+                else:
+                    accumulator = operations[operation](accumulator, operand)
+            idx += 1
     
     def get_terms(self):
         return [term for term in self.terms if not isinstance(term, int) and term[0] == 'n']
