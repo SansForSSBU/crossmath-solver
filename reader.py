@@ -89,18 +89,23 @@ def prepare_for_ocr(crop, inset=6):
 
 reader = easyocr.Reader(['en'])
 p2t = Pix2Text(device='cpu')
-def do_ocr(img, easyocr=False):
-    if easyocr:
-        results = reader.readtext(img, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789+-x/=')
-        if len(results) > 0:
-            return results[0]
-        else:
-            return None
-    else:
-        img2 = Image.fromarray(img)
-        img2 = ImageOps.expand(img2, border=(0, 10, 0, 10), fill='white')
-        result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x/=')
-        return result[:-1]
+def do_ocr(img):
+    img2 = Image.fromarray(img)
+    img2 = ImageOps.expand(img2, border=(0, 10, 0, 10), fill='white')
+
+    result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=/')
+    result = result.strip()
+    if result == '/':
+        return result
+    result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
+    result = result.strip()
+    if result != '':
+        return result
+    results = reader.readtext(img, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789 ')
+    if len(results) > 0:
+        return results[0]
+    return ''
+    
 
 def get_values(bounding_boxes):
     values = []
@@ -110,8 +115,6 @@ def get_values(bounding_boxes):
         ocr_ready = prepare_for_ocr(cell_crop)
         cell_contents = do_ocr(ocr_ready)
         values.append(cell_contents)
-        filename = f"./images/{idx}.png"
-        cv2.imwrite(filename, ocr_ready)
     
     for idx,v in enumerate(values):
         print(idx,v)
