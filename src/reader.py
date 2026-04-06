@@ -48,7 +48,8 @@ def get_tiles(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
-    edges = cv2.Canny(gray, 50, 200)
+    blurred = cv2.GaussianBlur(gray, (3,3), 0)
+    edges = cv2.Canny(blurred, 20, 100)
     contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     squares = {get_midpoint(cnt): cnt for cnt in contours if is_square(cnt)}
 
