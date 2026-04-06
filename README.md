@@ -1,5 +1,9 @@
 # crossmath-solver
 
+> **Note:** This project is currently a **Work in Progress**. 
+> It is designed specifically for **Linux** environments and has only been 
+> verified using the sample image provided in this repository.
+
 # Setup
 
 From root of repository:
@@ -9,6 +13,8 @@ From root of repository:
 `source .venv/bin/activate`
 
 `pip install -r requirements.txt`
+
+`sudo apt install tesseract-ocr`
 
 # Usage
 
