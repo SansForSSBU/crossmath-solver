@@ -88,7 +88,7 @@ def prepare_for_ocr(crop, inset=6):
 
 reader = easyocr.Reader(['en'])
 image_idx = 0
-def do_ocr(img, can_be_operator=True, debug=True):
+def do_ocr(img, can_be_operator=True, debug=False):
     op_crop, num_crop = img
     global image_idx
     op_crop = Image.fromarray(op_crop)
