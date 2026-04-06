@@ -82,7 +82,8 @@ def prepare_for_ocr(crop, inset=6):
     resized_crop = cv2.resize(gray_crop, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     blurred_crop = cv2.medianBlur(resized_crop, 7)
     _, op_crop = cv2.threshold(blurred_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    _, num_crop = cv2.threshold(resized_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    blurred_num_crop = cv2.medianBlur(resized_crop, 3)
+    _, num_crop = cv2.threshold(blurred_num_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     return (op_crop, num_crop)
 
 reader = easyocr.Reader(['en'])
