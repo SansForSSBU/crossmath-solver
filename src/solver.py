@@ -1,5 +1,5 @@
 import cv2
-from reader import read_img, print_grid
+from src.reader import read_img, print_grid
 import operator
 import itertools
 
@@ -52,7 +52,9 @@ def find_equations(row):
             eq.append(Equation(curr_eq))
     return eq
 
+
 def solve(available_nums, grid):
+    equations = []
     for row in grid:
         equations.extend(find_equations(row))
 
@@ -82,13 +84,3 @@ def solve(available_nums, grid):
     for k in candidates.keys():
         ans[k] = candidates[k][0]
     return ans
-
-img = cv2.imread("puzzle1.png")
-available_nums, grid = read_img(img)
-equations = []
-ans = solve(available_nums, grid)
-for k,v in ans.items():
-    mask = (grid == k)
-    grid[mask] = v
-
-print_grid(grid, max_len=2)
