@@ -44,13 +44,21 @@ def get_midpoint(square):
     center = (x + w // 2, y + h // 2)
     return center
 
-def get_tiles(img):
+def get_tiles(img, debug=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
     blurred = cv2.GaussianBlur(gray, (3,3), 0)
-    edges = cv2.Canny(blurred, 20, 100)
-    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    kernel = np.ones((5,5), np.uint8)
+    eroded = cv2.erode(blurred, kernel, iterations=1)
+    edges1 = cv2.Canny(blurred, 20, 100)
+    edges2 = cv2.Canny(eroded, 20, 100)
+    contours1, _ = cv2.findContours(edges1, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours2, _ = cv2.findContours(edges2, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours1 = list(contours1)
+    contours2 = list(contours2)
+    contours1.extend(contours2)
+    contours = tuple(contours1)
     squares = {get_midpoint(cnt): cnt for cnt in contours if is_square(cnt)}
 
     unique_squares = {}
@@ -74,31 +82,53 @@ def get_tiles(img):
         if not all(c > 245 for c in avg_color):
             final_squares.append(square)
 
+    if debug:
+        output_img = img.copy()
+        for square in final_squares:
+            x, y, w, h = cv2.boundingRect(square)
+            cv2.rectangle(output_img, (x, y), (x+w, y+h), (0, 0, 255), 2)
+
+        img_rgb = cv2.cvtColor(output_img, cv2.COLOR_BGR2RGB)
+        
+        pil_img = Image.fromarray(img_rgb)
+        pil_img.save("output_file.png")
+
     return final_squares
 
 def prepare_for_ocr(crop, inset=6):
     crop = crop[inset: -inset, inset: -inset]    
     gray_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     resized_crop = cv2.resize(gray_crop, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    _, clean_crop = cv2.threshold(resized_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    return clean_crop
+    blurred_crop = cv2.medianBlur(resized_crop, 7)
+    _, op_crop = cv2.threshold(blurred_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    blurred_num_crop = cv2.medianBlur(resized_crop, 3)
+    _, num_crop = cv2.threshold(blurred_num_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return (op_crop, num_crop)
 
 reader = easyocr.Reader(['en'])
-def do_ocr(img, can_be_operator=True):
-    img2 = Image.fromarray(img)
-    img2 = ImageOps.expand(img2, border=(0, 10, 0, 10), fill='white')
+image_idx = 0
+def do_ocr(img, can_be_operator=True, debug_nums=False):
+    op_crop, num_crop = img
+    global image_idx
+    op_crop = Image.fromarray(op_crop)
+    op_crop = ImageOps.expand(op_crop, border=(0, 10, 0, 10), fill='white')
+    if debug_nums:
+        debug_num = Image.fromarray(num_crop)
+        debug_num.save(f"test_images/n{image_idx}.png")
+        image_idx += 1
+
     if can_be_operator:
-        result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=')
+        result = pytesseract.image_to_string(op_crop, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=')
         result = result.strip()
         if result == '/':
             return result
-        result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
+        result = pytesseract.image_to_string(op_crop, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
         result = result.strip()
         if result in ['+', '-', 'x', '=']:
             if result == 'x':
                 return '*'
             return result
-    results = reader.readtext(img, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789 ')
+    results = reader.readtext(num_crop, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789 ')
     if len(results) > 0:
         return results[0]
     return ''

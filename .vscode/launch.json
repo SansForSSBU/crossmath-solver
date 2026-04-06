@@ -6,7 +6,7 @@
     "configurations": [
     
         {
-            "name": "Python Debugger: Unhappy Case",
+            "name": "Unhappy Case",
             "type": "debugpy",
             "request": "launch",
             "module": "src.main",
@@ -14,12 +14,12 @@
             "args": "test/unsolved_puzzles/screenshot.png"
         },
         {
-            "name": "Python Debugger: Happy Case",
+            "name": "Happy Case",
             "type": "debugpy",
             "request": "launch",
             "module": "src.main",
             "console": "integratedTerminal",
-            "args": "test/puzzles/3.png"
+            "args": "test/puzzles/9.png"
         }
     ]
 }
