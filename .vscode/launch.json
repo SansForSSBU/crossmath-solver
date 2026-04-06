@@ -6,12 +6,20 @@
     "configurations": [
     
         {
-            "name": "Python Debugger: Current File with Arguments",
+            "name": "Python Debugger: Unhappy Case",
             "type": "debugpy",
             "request": "launch",
             "module": "src.main",
             "console": "integratedTerminal",
             "args": "test/unsolved_puzzles/screenshot.png"
+        },
+        {
+            "name": "Python Debugger: Happy Case",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.main",
+            "console": "integratedTerminal",
+            "args": "test/puzzles/3.png"
         }
     ]
 }

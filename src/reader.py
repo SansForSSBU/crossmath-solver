@@ -94,7 +94,7 @@ def do_ocr(img, can_be_operator=True):
             return result
         result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
         result = result.strip()
-        if result != '':
+        if result in ['+', '-', 'x', '=']:
             if result == 'x':
                 return '*'
             return result
