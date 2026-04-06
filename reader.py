@@ -109,44 +109,64 @@ def do_ocr(img):
 
 def get_values(bounding_boxes):
     values = []
-    for idx,box in enumerate(bounding_boxes):
+    for box in bounding_boxes:
         x, y, w, h = box
         cell_crop = img[y:y+h, x:x+w]
         ocr_ready = prepare_for_ocr(cell_crop)
         cell_contents = do_ocr(ocr_ready)
         values.append(cell_contents)
-    
-    for idx,v in enumerate(values):
-        print(idx,v)
     return values
 
-img = cv2.imread("puzzle1.png")
-tiles = get_tiles(img)
-bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
-values = get_values(bounding_boxes)
+def print_grid(np_grid):
+    for row in np_grid:
+        print(" ".join(f"{str(item):^4}" for item in row))
 
-# Grid reconstruction
-coords = {(box[0], box[1]):values[idx] for idx,box in enumerate(bounding_boxes)}
+def read_img(img):
+    tiles = get_tiles(img)
+    bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
+    values = get_values(bounding_boxes)
 
-sol_tiles = {coord:v for coord,v in coords.items() if coord[1] > 1350}
-grid_tiles = {coord:v for coord,v in coords.items() if not coord in sol_tiles}
-min_x = min([t[0] for t in grid_tiles.keys()])
-min_y = min([t[1] for t in grid_tiles.keys()])
+    # Grid reconstruction
+    coords = {(box[0], box[1]):values[idx] for idx,box in enumerate(bounding_boxes)}
 
-new_grid_tiles = {}
-for idx, tile in enumerate(grid_tiles.keys()):
-    new_grid_tiles[(tile[0]-min_x, tile[1]-min_y)] = grid_tiles[tile]
+    sol_tiles = {coord:v for coord,v in coords.items() if coord[1] > 1350}
+    grid_tiles = {coord:v for coord,v in coords.items() if not coord in sol_tiles}
+    min_x = min([t[0] for t in grid_tiles.keys()])
+    min_y = min([t[1] for t in grid_tiles.keys()])
 
-grid_tiles = new_grid_tiles
+    new_grid_tiles = {}
+    for idx, tile in enumerate(grid_tiles.keys()):
+        new_grid_tiles[(tile[0]-min_x, tile[1]-min_y)] = grid_tiles[tile]
 
-y_diff = min([t[1] for t in grid_tiles if t[1] > 5])
-x_diff = min([t[0] for t in grid_tiles if t[0] > 5])
+    grid_tiles = new_grid_tiles
 
-new_grid_tiles = {}
-for tile in grid_tiles.keys():
-    tile_x = round(tile[0] / x_diff)
-    tile_y = round(tile[1] / y_diff)
-    new_grid_tiles[(tile_x, tile_y)] = grid_tiles[tile]
+    y_diff = min([t[1] for t in grid_tiles if t[1] > 5])
+    x_diff = min([t[0] for t in grid_tiles if t[0] > 5])
 
-grid_tiles = new_grid_tiles
-pass
+    new_grid_tiles = {}
+    for tile in grid_tiles.keys():
+        tile_x = round(tile[0] / x_diff)
+        tile_y = round(tile[1] / y_diff)
+        new_grid_tiles[(tile_x, tile_y)] = grid_tiles[tile]
+
+    grid_tiles = new_grid_tiles
+    available_nums = [int(x) for x in sol_tiles.values()]
+    n = 1
+    for k,v in grid_tiles.items():
+        if v == '':
+            grid_tiles[k] = f'n{n}'
+            n += 1
+    cols = max(c[0]+1 for c in grid_tiles.keys())
+    rows = max(c[1]+1 for c in grid_tiles.keys())
+    grid = np.full((rows, cols), "", dtype='U10')
+    for k,v in grid_tiles.items():
+        x = k[1]
+        y = k[0]
+        grid[x,y] = np.str_(v)
+    return available_nums, grid
+
+if __name__ == "__main__":
+    img = cv2.imread("puzzle1.png")
+    available_nums, grid = read_img(img)
+    print_grid(grid)
+    print("Available nums", available_nums)
