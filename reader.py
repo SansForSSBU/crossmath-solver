@@ -120,9 +120,9 @@ def get_values(bounding_boxes):
         values.append(cell_contents)
     return values
 
-def print_grid(np_grid):
+def print_grid(np_grid, max_len=4):
     for row in np_grid:
-        print(" ".join(f"{str(item):^4}" for item in row))
+        print(" ".join(f"{str(item):^{max_len}}" for item in row))
 
 def read_img(image):
     global img

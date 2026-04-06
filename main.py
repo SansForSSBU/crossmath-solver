@@ -91,4 +91,4 @@ for k,v in ans.items():
     mask = (grid == k)
     grid[mask] = v
 
-print_grid(grid)
+print_grid(grid, max_len=2)
