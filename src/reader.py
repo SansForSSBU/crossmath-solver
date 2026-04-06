@@ -110,9 +110,14 @@ def get_values(bounding_boxes):
         x, y, w, h = box
         can_be_operator = not (y > 1350)
         cell_crop = img[y:y+h, x:x+w]
+        avg_cell_color = np.mean(cell_crop, axis=(0, 1))
+        if avg_cell_color[0] > 180 and can_be_operator:
+            values.append('')
+            continue
         ocr_ready = prepare_for_ocr(cell_crop)
         cell_contents = do_ocr(ocr_ready, can_be_operator=can_be_operator)
         values.append(cell_contents)
+        #print(avg_cell_color, cell_contents)
     return values
 
 def print_grid(np_grid, max_len=4):
