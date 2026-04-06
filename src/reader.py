@@ -49,8 +49,16 @@ def get_tiles(img, debug=True):
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
     blurred = cv2.GaussianBlur(gray, (3,3), 0)
-    edges = cv2.Canny(blurred, 20, 100)
-    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    kernel = np.ones((5,5), np.uint8)
+    eroded = cv2.erode(blurred, kernel, iterations=1)
+    edges1 = cv2.Canny(eroded, 20, 100)
+    edges2 = cv2.Canny(blurred, 20, 100)
+    contours1, _ = cv2.findContours(edges1, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours2, _ = cv2.findContours(edges2, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours1 = list(contours1)
+    contours2 = list(contours2)
+    contours1.extend(contours2)
+    contours = tuple(contours1)
     squares = {get_midpoint(cnt): cnt for cnt in contours if is_square(cnt)}
 
     unique_squares = {}
