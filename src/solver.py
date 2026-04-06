@@ -1,7 +1,8 @@
 import cv2
-from reader import read_img, print_grid
+from src.reader import read_img, print_grid
 import operator
 import itertools
+from collections import Counter
 
 class Equation():
     def __init__(self, terms):
@@ -27,11 +28,18 @@ class Equation():
             else:
                 thing.append(term)
         
-        symbol = thing[1]
-        a = thing[0]
-        b = thing[2]
-        c = thing[4]
-        return operations[symbol](a,b) == c
+        accumulator = thing[0]
+        idx = 1
+        while idx < len(thing):
+            if idx % 2 == 1:
+                operation = thing[idx]
+            else:
+                operand = thing[idx]
+                if operation == "=":
+                    return accumulator == operand
+                else:
+                    accumulator = operations[operation](accumulator, operand)
+            idx += 1
     
     def get_terms(self):
         return [term for term in self.terms if not isinstance(term, int) and term[0] == 'n']
@@ -47,20 +55,30 @@ def find_equations(row):
             else:
                 curr_eq.append(term)
         else:
+            if len(curr_eq) >= 5:
+                eq.append(Equation(curr_eq))
             curr_eq = []
-        if len(curr_eq) == 5:
-            eq.append(Equation(curr_eq))
+        
+    if len(curr_eq) >= 5:
+        eq.append(Equation(curr_eq))
     return eq
 
-def solve(available_nums, grid):
+def grid_to_equations(grid):
+    equations = []
     for row in grid:
         equations.extend(find_equations(row))
 
     for col in grid.T:
         equations.extend(find_equations(col))
+    
+    return equations
+
+def solve(available_nums, grid):
+    equations = grid_to_equations(grid)
 
     candidates = {f"n{idx+1}": list(set(available_nums.copy())) for idx, _ in enumerate(available_nums)}
     while True:
+        # Filtering: for each equation, constrain the candidates to what could work.
         for curr_term,_ in candidates.items():
             for equation in equations:
                 terms = equation.get_terms()
@@ -75,6 +93,23 @@ def solve(available_nums, grid):
 
                 valid_combinations = [comb for comb in all_combinations if equation.check(comb)]
                 candidates[curr_term] = list(set([comb[curr_term] for comb in valid_combinations]))
+        
+        # If all of a number are used up, don't allow other candidates to use it.
+        available_qtys = Counter(available_nums)
+        nums_used = {}
+        for cand in candidates.values():
+            if len(cand) == 1:
+                num_used = cand[0]
+                nums_used[num_used] = nums_used.get(num_used, 0) + 1
+        
+        pass
+        for k in nums_used.keys():
+            if nums_used[k] == available_qtys[k]:
+                for cand in candidates.values():
+                    if len(cand) != 1:
+                        if k in cand:
+                            cand.remove(k)
+
         if all(len(cand) <= 1 for cand in candidates.values()):
             break
 
@@ -82,13 +117,3 @@ def solve(available_nums, grid):
     for k in candidates.keys():
         ans[k] = candidates[k][0]
     return ans
-
-img = cv2.imread("puzzle1.png")
-available_nums, grid = read_img(img)
-equations = []
-ans = solve(available_nums, grid)
-for k,v in ans.items():
-    mask = (grid == k)
-    grid[mask] = v
-
-print_grid(grid, max_len=2)
