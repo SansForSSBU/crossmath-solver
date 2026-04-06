@@ -8,6 +8,7 @@ import os
 from PIL import Image, ImageOps
 import pytesseract
 
+img = None
 def distance(p1, p2):
     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
@@ -121,7 +122,9 @@ def print_grid(np_grid):
     for row in np_grid:
         print(" ".join(f"{str(item):^4}" for item in row))
 
-def read_img(img):
+def read_img(image):
+    global img
+    img = image
     tiles = get_tiles(img)
     bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
     values = get_values(bounding_boxes)
