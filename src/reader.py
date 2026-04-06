@@ -44,7 +44,7 @@ def get_midpoint(square):
     center = (x + w // 2, y + h // 2)
     return center
 
-def get_tiles(img, debug=True):
+def get_tiles(img, debug=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
