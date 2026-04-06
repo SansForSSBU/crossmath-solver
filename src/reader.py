@@ -83,20 +83,20 @@ def prepare_for_ocr(crop, inset=6):
     return clean_crop
 
 reader = easyocr.Reader(['en'])
-def do_ocr(img):
+def do_ocr(img, can_be_operator=True):
     img2 = Image.fromarray(img)
     img2 = ImageOps.expand(img2, border=(0, 10, 0, 10), fill='white')
-
-    result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=/')
-    result = result.strip()
-    if result == '/':
-        return result
-    result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
-    result = result.strip()
-    if result != '':
-        if result == 'x':
-            return '*'
-        return result
+    if can_be_operator:
+        result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=')
+        result = result.strip()
+        if result == '/':
+            return result
+        result = pytesseract.image_to_string(img2, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
+        result = result.strip()
+        if result != '':
+            if result == 'x':
+                return '*'
+            return result
     results = reader.readtext(img, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789 ')
     if len(results) > 0:
         return results[0]
@@ -107,9 +107,10 @@ def get_values(bounding_boxes):
     values = []
     for box in bounding_boxes:
         x, y, w, h = box
+        can_be_operator = not (y > 1350)
         cell_crop = img[y:y+h, x:x+w]
         ocr_ready = prepare_for_ocr(cell_crop)
-        cell_contents = do_ocr(ocr_ready)
+        cell_contents = do_ocr(ocr_ready, can_be_operator=can_be_operator)
         values.append(cell_contents)
     return values
 
