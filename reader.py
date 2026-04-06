@@ -2,8 +2,6 @@ import cv2
 import math
 import numpy as np
 import easyocr
-import matplotlib.pyplot as plt
-from pix2text import Pix2Text
 import os
 from PIL import Image, ImageOps
 import pytesseract
@@ -22,10 +20,6 @@ def display_img(img, shrink=False):
         cv2.imshow("Preview", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-def matplotlib_display_img(img):
-    plt.imshow(img, cmap='gray')
-    plt.show()
 
 def is_square(cnt):
     area = cv2.contourArea(cnt)
@@ -89,7 +83,6 @@ def prepare_for_ocr(crop, inset=6):
     return clean_crop
 
 reader = easyocr.Reader(['en'])
-p2t = Pix2Text(device='cpu')
 def do_ocr(img):
     img2 = Image.fromarray(img)
     img2 = ImageOps.expand(img2, border=(0, 10, 0, 10), fill='white')
