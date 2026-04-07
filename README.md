@@ -8,7 +8,7 @@ It uses computer vision to read the puzzles from the image then solves it and pr
 
 # Demo Video
 
-[![Watch the demo](https://img.youtube.com/vi/lENMmO1ahg0/0.jpg)](https://www.youtube.com/watch?v=lENMmO1ahg0)
+https://github.com/user-attachments/assets/5dcad881-6ea0-4573-bb15-2b2796b1949c
 
 # Setup
 
