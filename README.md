@@ -1,8 +1,8 @@
-# crossmath-solver
-
 # Demo Video
 
 https://github.com/user-attachments/assets/5dcad881-6ea0-4573-bb15-2b2796b1949c
+
+# Explanation
 
 Solver for the mobile crossword/math game crossmath using computer vision and optical character recognition
 
