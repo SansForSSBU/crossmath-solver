@@ -1,11 +1,14 @@
 # crossmath-solver
 
-> **Note:** This project is currently a **Work in Progress**. 
-> It is designed specifically for **Linux** environments.
-> Input images must be screenshots of the game in 1080x2160 resolution
-> Even on these input images, the program will still sometimes fail.
+Solver for the mobile crossword/math game crossmath.
+
+This solver has been tested on 20 puzzles from the game.
+
+It uses computer vision to read the puzzles from the image then solves it and prints out the solution.
 
 # Setup
+
+You must be running Linux for these instructions to work
 
 From root of repository:
 
@@ -18,6 +21,8 @@ From root of repository:
 `sudo apt install tesseract-ocr`
 
 # Usage
+
+Input images must be of the game in fullscreen and at the resolution 1080x2160
 
 From root of repository and whilst inside venv:
 
