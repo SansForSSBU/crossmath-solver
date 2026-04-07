@@ -15,7 +15,7 @@ VALID_OPERATORS = ["+", "-", "/", "x", "="]
 
 img = None
 
-def get_values(bounding_boxes):
+def get_values(bounding_boxes, generate_ocr_golden_records=False):
     values = []
     for box in bounding_boxes:
         x, y, w, h = box
@@ -25,7 +25,7 @@ def get_values(bounding_boxes):
         if avg_cell_color[0] > 180 and can_be_operator:
             values.append('')
             continue
-        cell_contents = ocr(cell_crop, can_be_operator=can_be_operator)
+        cell_contents = ocr(cell_crop, can_be_operator=can_be_operator, generate_golden_records=generate_ocr_golden_records)
         values.append(cell_contents)
     return values
 
@@ -71,7 +71,7 @@ def parse_tile_text(tile_text, can_be_operator=True):
     else:
         raise ValueError(f"Invalid tile: {tile_text}")
 
-def read_img(path):
+def read_img(path, generate_ocr_golden_records=False):
     global img
     image = cv2.imread(path)
     if image is None:
@@ -81,7 +81,7 @@ def read_img(path):
     img = image
     tiles = get_tiles(img)
     bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
-    values = get_values(bounding_boxes)
+    values = get_values(bounding_boxes, generate_ocr_golden_records=generate_ocr_golden_records)
 
     # Grid reconstruction
     coords = {(box[0], box[1]):values[idx] for idx,box in enumerate(bounding_boxes)}
