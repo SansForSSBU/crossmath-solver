@@ -19,7 +19,7 @@ def ocr(crop, can_be_operator=True, generate_golden_records=False):
         rgb_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(rgb_crop)
         pil_image.save(f"{image_folder_path}/{image_idx}.png")
-        ocr_key[image_idx] = cell_contents
+        ocr_key[image_idx] = (can_be_operator, cell_contents)
         with open(key_path, "w") as f:
             json.dump(ocr_key, f, indent=4)
         image_idx += 1
