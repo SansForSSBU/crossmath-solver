@@ -5,24 +5,15 @@ import easyocr
 import os
 from PIL import Image, ImageOps
 import pytesseract
+import sys
 from src.tile_detector import get_tiles
 from src.optical_character_recognition import ocr
+from src.game_board import GameBoard
 
 MAX_TILE_NUM_DIGITS = 3
 VALID_OPERATORS = ["+", "-", "/", "x", "="]
 
 img = None
-
-def shrink_img(img):
-    return cv2.resize(img, (0,0), fx=0.3, fy=0.3)
-
-def display_img(img, shrink=False):
-    if shrink:
-        cv2.imshow("Preview", shrink_img(img))
-    else:
-        cv2.imshow("Preview", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows() 
 
 def get_values(bounding_boxes):
     values = []
@@ -37,10 +28,6 @@ def get_values(bounding_boxes):
         cell_contents = ocr(cell_crop, can_be_operator=can_be_operator)
         values.append(cell_contents)
     return values
-
-def print_grid(np_grid, max_len=4):
-    for row in np_grid:
-        print(" ".join(f"{str(item):^{max_len}}" for item in row))
 
 def reconstruct_grid(grid_tiles):
     min_x = min([t[0] for t in grid_tiles.keys()])
@@ -74,7 +61,7 @@ def reconstruct_grid(grid_tiles):
         x = k[1]
         y = k[0]
         grid[x,y] = np.str_(v)
-    return grid
+    return GameBoard(grid)
 
 def parse_tile_text(tile_text, can_be_operator=True):
     if str.isdigit(tile_text) and len(tile_text) <= MAX_TILE_NUM_DIGITS:
@@ -84,8 +71,12 @@ def parse_tile_text(tile_text, can_be_operator=True):
     else:
         raise ValueError(f"Invalid tile: {tile_text}")
 
-def read_img(image):
+def read_img(path):
     global img
+    image = cv2.imread(path)
+    if image is None:
+        print(f"Could not find or open image at {path}")
+        sys.exit(1)
     img = image
     tiles = get_tiles(img)
     bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
