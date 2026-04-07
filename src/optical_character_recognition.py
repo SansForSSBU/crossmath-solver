@@ -85,11 +85,14 @@ def do_ocr(img, can_be_operator=True):
             if result == 'x':
                 return '*'
             return result
-    results = reader.readtext(num_crop, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789')
-    if len(results) > 0:
-        return results[0]
+
     results = reader.readtext(op_crop, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789')
     if len(results) > 0:
         return results[0]
+    
+    results = reader.readtext(num_crop, detail=0, paragraph=False, rotation_info=[0], allowlist='0123456789')
+    if len(results) > 0:
+        return results[0]
+
     pass
     raise ValueError("OCR was provided with an image it could not find any characters in")
