@@ -1,14 +1,12 @@
 # crossmath-solver
 
-Solver for the mobile crossword/math game crossmath.
-
-This solver has been tested on 20 puzzles from the game.
-
-It uses computer vision to read the puzzles from the image then solves it and prints out the solution.
-
 # Demo Video
 
 https://github.com/user-attachments/assets/5dcad881-6ea0-4573-bb15-2b2796b1949c
+
+Solver for the mobile crossword/math game crossmath using computer vision and optical character recognition
+
+This solver has been tested on 20 puzzles from the game.
 
 # Setup
 
