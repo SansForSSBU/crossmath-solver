@@ -17,7 +17,6 @@ def test_golden_records_img2solution():
         assert np.array_equal(solved_board.np_grid, old_ans)
         print(f"{img_path.name} passed match test")
 
-"""
 def test_ocr_golden_records():
     image_folder_path = "test/ocr_golden_records/images"
     key_path = "test/ocr_golden_records/key.json"
@@ -29,4 +28,3 @@ def test_ocr_golden_records():
         img = cv2.imread(image_path)
         assert ocr(img, can_be_operator=can_be_operator) == answer
     pass
-"""

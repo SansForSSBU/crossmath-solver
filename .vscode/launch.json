@@ -11,7 +11,7 @@
             "request": "launch",
             "module": "src.main",
             "console": "integratedTerminal",
-            "args": "test/puzzles/12.png"
+            "args": "test/unsolved_puzzles/screenshot.png"
         },
         {
             "name": "Happy Case",
