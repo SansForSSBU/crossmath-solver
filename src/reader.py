@@ -75,8 +75,9 @@ def read_img(path):
     global img
     image = cv2.imread(path)
     if image is None:
-        print(f"Could not find or open image at {path}")
-        sys.exit(1)
+        raise ValueError(f"Could not find image at {path}")
+    if image.shape != (2160, 1080, 3):
+        raise ValueError("Provided image was not 1080x2160")
     img = image
     tiles = get_tiles(img)
     bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
