@@ -2,13 +2,28 @@ import easyocr
 from PIL import Image, ImageOps
 import pytesseract
 import cv2
+import json
 
 reader = easyocr.Reader(['en'])
-image_idx = 0
 
-def ocr(crop, can_be_operator=True):
+image_idx = 0
+ocr_key = {}
+def ocr(crop, can_be_operator=True, generate_golden_records=False):
+    global image_idx
+    global ocr_key
     ocr_ready = prepare_for_ocr(crop)
     cell_contents = do_ocr(ocr_ready, can_be_operator=can_be_operator)
+    if generate_golden_records:
+        image_folder_path = "test/ocr_golden_records/images"
+        key_path = "test/ocr_golden_records/key.json"
+        rgb_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(rgb_crop)
+        pil_image.save(f"{image_folder_path}/{image_idx}.png")
+        ocr_key[image_idx] = cell_contents
+        with open(key_path, "w") as f:
+            json.dump(ocr_key, f, indent=4)
+        image_idx += 1
+
     return cell_contents
 
 def prepare_for_ocr(crop, inset=6):
@@ -21,15 +36,11 @@ def prepare_for_ocr(crop, inset=6):
     _, num_crop = cv2.threshold(blurred_num_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     return (op_crop, num_crop)   
 
-def do_ocr(img, can_be_operator=True, debug_nums=False):
+def do_ocr(img, can_be_operator=True):
     op_crop, num_crop = img
     global image_idx
     op_crop = Image.fromarray(op_crop)
     op_crop = ImageOps.expand(op_crop, border=(0, 10, 0, 10), fill='white')
-    if debug_nums:
-        debug_num = Image.fromarray(num_crop)
-        debug_num.save(f"test_images/n{image_idx}.png")
-        image_idx += 1
 
     if can_be_operator:
         result = pytesseract.image_to_string(op_crop, config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=')

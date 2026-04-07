@@ -9,8 +9,8 @@ def parse_args():
     parser.add_argument("path", help="Path to puzzle image")
     return parser.parse_args()
 
-def solve_img(path):
-    available_nums, game_board = read_img(path)
+def solve_img(path, generate_ocr_golden_records=False):
+    available_nums, game_board = read_img(path, generate_ocr_golden_records=generate_ocr_golden_records)
     answers = solve(available_nums, game_board)
     game_board.substitute_answers(answers)
     return game_board
