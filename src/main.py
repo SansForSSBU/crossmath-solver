@@ -4,17 +4,19 @@ import cv2
 import sys
 import argparse
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Crossmath solver")
+    parser.add_argument("path", help="Path to puzzle image")
+    return parser.parse_args()
+
 def solve_img(path):
-    
     available_nums, game_board = read_img(path)
     answers = solve(available_nums, game_board)
     game_board.substitute_answers(answers)
     return game_board
 
 def main():
-    parser = argparse.ArgumentParser(description="Crossmath solver")
-    parser.add_argument("path", help="Path to puzzle image")
-    args = parser.parse_args()
+    args = parse_args()
     solved_board = solve_img(args.path)
     solved_board.print()
 
