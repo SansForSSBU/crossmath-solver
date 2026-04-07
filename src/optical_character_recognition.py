@@ -5,6 +5,7 @@ import cv2
 import json
 from src.utils import dump_img
 import numpy as np
+from scipy.ndimage import label
 
 reader = easyocr.Reader(['en'])
 
@@ -56,8 +57,14 @@ def prepare_for_ocr(crop, inset=6):
     blurred_num_crop = cv2.medianBlur(resized_crop, 3)
     _, num_crop = cv2.threshold(blurred_num_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     num_crop = shave_whitespace(num_crop)
-    op_crop = shave_whitespace(op_crop, padding=50)
+    op_crop = shave_whitespace(op_crop, padding=70)
     return (op_crop, num_crop)   
+
+def only_one_island_of_black(pil_black_and_white):
+    arr = np.array(pil_black_and_white.convert('L'))
+    black_mask = (arr == 0)
+    _, num_features = label(black_mask)
+    return num_features == 1
 
 def do_ocr(img, can_be_operator=True):
     op_crop, num_crop = img
@@ -73,6 +80,8 @@ def do_ocr(img, can_be_operator=True):
         result = pytesseract.image_to_string(pil_op_crop, config=r'--oem 3 --psm 13 -c tessedit_char_whitelist=+-x=')
         result = result.strip()
         if result in ['+', '-', 'x', '=']:
+            if result == "=" and only_one_island_of_black(pil_op_crop): # Hack to deal with the OCR confusing - for =
+                return "-"
             if result == 'x':
                 return '*'
             return result
