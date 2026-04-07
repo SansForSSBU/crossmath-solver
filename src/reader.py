@@ -79,8 +79,7 @@ def read_img(path, generate_ocr_golden_records=False):
     if image.shape != (2160, 1080, 3):
         raise ValueError("Provided image was not 1080x2160")
     img = image
-    tiles = get_tiles(img)
-    bounding_boxes = [cv2.boundingRect(tile) for tile in tiles]
+    bounding_boxes = get_tiles(img)
     values = get_values(bounding_boxes, generate_ocr_golden_records=generate_ocr_golden_records)
 
     # Grid reconstruction
