@@ -30,6 +30,62 @@ def get_midpoint(square):
     center = (x + w // 2, y + h // 2)
     return center
 
+def dump_img(cv2_img, name="output_file.png"):
+    img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+    pil_img.save(name)
+
+def find_one_square(img, small_crop):
+    avg_color = cv2.mean(small_crop)
+    green, blue, red, alpha = avg_color
+    is_candidate_tile = not (red > 230 or green < 180)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh_method = cv2.THRESH_BINARY_INV if is_candidate_tile else cv2.THRESH_BINARY
+    a, thresh = cv2.threshold(gray, 230, 255, thresh_method)
+    dump_img(thresh, "thresh.png")
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        peri = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+        if len(approx == 4):
+            x, y, w, h = cv2.boundingRect(approx)
+            area = w * h
+            aspect_ratio = float(w) / h
+            if 0.8 <= aspect_ratio <= 1.2 and w*h > 300:
+                if is_candidate_tile:
+                    ret = (x+7, y+7, w-14, h-14)
+                else:
+                    ret = (x+2, y+2, w-4, h-4)
+                return ret
+    
+    raise ValueError
+
+
+def refine_tiles(img, curr_tiles):
+    pass
+    refined = []
+    for tile in curr_tiles:
+        (x, y, w, h) = tile
+        p = 10
+        h_img, w_img = img.shape[:2]
+        y1 = max(0, y - p)
+        y2 = min(h_img, y + h + p)
+        x1 = max(0, x - p)
+        x2 = min(w_img, x + w + p)
+        small_crop = img[y:y+h, x:x+w]
+        large_crop = img[y1:y2, x1:x2]
+        dump_img(small_crop, "small_crop.png")
+        dump_img(large_crop, "large_crop.png")
+        sub_box = find_one_square(large_crop, small_crop)
+        (lx, ly, lw, lh) = sub_box
+        refined_crop = large_crop[lx:lx+lw, ly:ly+lh]
+        dump_img(refined_crop, "refined_crop.png")
+        global_x = x1 + lx
+        global_y = y1 + ly
+        refined.append((global_x, global_y, lw, lh))
+
+    return refined#curr_tiles
+
 def get_tiles(img, debug=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, gray = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
@@ -66,7 +122,7 @@ def get_tiles(img, debug=False):
         roi = img[midpoint[1]-2 : midpoint[1]+2, midpoint[0]-2:midpoint[0]+2]
         avg_color = cv2.mean(roi)[:3]
         if not all(c > 245 for c in avg_color):
-            final_squares.append(square)
+            final_squares.append(cv2.boundingRect(square))
 
     if debug:
         output_img = img.copy()
@@ -79,4 +135,5 @@ def get_tiles(img, debug=False):
         pil_img = Image.fromarray(img_rgb)
         pil_img.save("output_file.png")
 
-    return final_squares
+    refined_squares = refine_tiles(img, final_squares)
+    return refined_squares
