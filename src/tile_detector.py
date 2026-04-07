@@ -2,6 +2,7 @@ import cv2
 import math
 import numpy as np
 from PIL import Image
+from src.utils import dump_img
 
 def distance(p1, p2):
     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
@@ -29,11 +30,6 @@ def get_midpoint(square):
     x, y, w, h = cv2.boundingRect(square)
     center = (x + w // 2, y + h // 2)
     return center
-
-def dump_img(cv2_img, name="output_file.png"):
-    img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-    pil_img = Image.fromarray(img_rgb)
-    pil_img.save(name)
 
 def find_one_square(img, small_crop):
     avg_color = cv2.mean(small_crop)
