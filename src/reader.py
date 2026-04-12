@@ -21,7 +21,9 @@ reader = None
 def init_worker():
     global reader
     if reader is None:
+        print("Started initializing easyocr reader")
         reader = easyocr.Reader(['en'])
+        print("Initialized easyocr reader")
 
 def ocr_worker(task):
     if task == '':
