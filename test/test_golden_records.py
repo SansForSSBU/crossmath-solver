@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import json
 import cv2
+import easyocr
 
 def test_golden_records_img2solution():
     puzzles_dir = Path("test/puzzles")
@@ -23,8 +24,9 @@ def test_ocr_golden_records():
     with open(key_path, "r") as f:
         key = json.load(f)
     for image_path in Path.iterdir(Path(image_folder_path)):
+        reader = easyocr.Reader(['en'])
         name = image_path.stem.split(".")[0]
         can_be_operator, answer = key[name]
         img = cv2.imread(image_path)
-        assert ocr(img, can_be_operator=can_be_operator) == answer
+        assert ocr(img, reader, can_be_operator=can_be_operator) == answer
     pass
