@@ -7,18 +7,18 @@ from src.utils import dump_img
 import numpy as np
 from scipy.ndimage import label
 
-reader = easyocr.Reader(['en'])
+#reader = easyocr.Reader(['en'])
 
 image_idx = 0
 ocr_key = {}
-def ocr(crop, can_be_operator=True, generate_golden_records=False):
+def ocr(crop, reader, can_be_operator=True, generate_golden_records=False):
     global image_idx
     global ocr_key
     dump_img(crop, "ocr_before.png")
     ocr_ready = prepare_for_ocr(crop)
     dump_img(ocr_ready[0], "ocr_preprocessed_0.png")
     dump_img(ocr_ready[1], "ocr_preprocessed_1.png")
-    cell_contents = do_ocr(ocr_ready, can_be_operator=can_be_operator)
+    cell_contents = do_ocr(ocr_ready, reader, can_be_operator=can_be_operator)
     if generate_golden_records:
         image_folder_path = "test/ocr_golden_records/images"
         key_path = "test/ocr_golden_records/key.json"
@@ -65,7 +65,7 @@ def only_one_island_of_black(pil_black_and_white):
     _, num_features = label(black_mask)
     return num_features == 1
 
-def do_ocr(img, can_be_operator=True):
+def do_ocr(img, reader, can_be_operator=True):
     op_crop, num_crop = img
     global image_idx
     pil_op_crop = Image.fromarray(op_crop)

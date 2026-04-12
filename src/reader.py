@@ -16,13 +16,19 @@ MAX_TILE_NUM_DIGITS = 3
 VALID_OPERATORS = ["+", "-", "/", "x", "="]
 
 img = None
+reader = None
+
+def init_worker():
+    global reader
+    if reader is None:
+        reader = easyocr.Reader(['en'])
 
 def ocr_worker(task):
     if task == '':
         return ''
     cell_crop, can_be_operator, generate_golden_records = task
     generate_golden_records = False # Will not currently work, need to be passed file path for image instead
-    cell_contents = ocr(cell_crop, can_be_operator=can_be_operator, generate_golden_records=generate_golden_records)
+    cell_contents = ocr(cell_crop, reader, can_be_operator=can_be_operator, generate_golden_records=generate_golden_records)
     return cell_contents
 
 def get_values(bounding_boxes, generate_ocr_golden_records=False):
@@ -40,7 +46,7 @@ def get_values(bounding_boxes, generate_ocr_golden_records=False):
     
     print("Parallel start")
     multiprocessing.set_start_method('spawn', force=True)
-    with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
+    with ProcessPoolExecutor(max_workers=min(4, os.cpu_count()), initializer=init_worker) as executor:
         values.extend(list(executor.map(ocr_worker, ocr_worker_tasks)))
     print("Parallel end")
     return values
