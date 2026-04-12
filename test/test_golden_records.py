@@ -19,12 +19,12 @@ def test_golden_records_img2solution():
         print(f"{img_path.name} passed match test")
 
 def test_ocr_golden_records():
+    reader = easyocr.Reader(['en'])
     image_folder_path = "test/ocr_golden_records/images"
     key_path = "test/ocr_golden_records/key.json"
     with open(key_path, "r") as f:
         key = json.load(f)
     for image_path in Path.iterdir(Path(image_folder_path)):
-        reader = easyocr.Reader(['en'])
         name = image_path.stem.split(".")[0]
         can_be_operator, answer = key[name]
         img = cv2.imread(image_path)
