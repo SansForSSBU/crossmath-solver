@@ -19,7 +19,6 @@ def ocr(crop, can_be_operator=True, generate_golden_records=False):
     dump_img(ocr_ready[0], "ocr_preprocessed_0.png")
     dump_img(ocr_ready[1], "ocr_preprocessed_1.png")
     cell_contents = do_ocr(ocr_ready, can_be_operator=can_be_operator)
-    print(cell_contents)
     if generate_golden_records:
         image_folder_path = "test/ocr_golden_records/images"
         key_path = "test/ocr_golden_records/key.json"

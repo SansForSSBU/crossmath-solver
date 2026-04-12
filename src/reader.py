@@ -9,24 +9,40 @@ import sys
 from src.tile_detector import get_tiles
 from src.optical_character_recognition import ocr
 from src.game_board import GameBoard
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 
 MAX_TILE_NUM_DIGITS = 3
 VALID_OPERATORS = ["+", "-", "/", "x", "="]
 
 img = None
 
+def ocr_worker(task):
+    if task == '':
+        return ''
+    cell_crop, can_be_operator, generate_golden_records = task
+    generate_golden_records = False # Will not currently work, need to be passed file path for image instead
+    cell_contents = ocr(cell_crop, can_be_operator=can_be_operator, generate_golden_records=generate_golden_records)
+    return cell_contents
+
 def get_values(bounding_boxes, generate_ocr_golden_records=False):
     values = []
+    ocr_worker_tasks = []
     for box in bounding_boxes:
         x, y, w, h = box
         can_be_operator = not (y > 1350)
         cell_crop = img[y:y+h, x:x+w]
         avg_cell_color = np.mean(cell_crop, axis=(0, 1))
         if avg_cell_color[0] > 180 and can_be_operator:
-            values.append('')
+            ocr_worker_tasks.append('')
             continue
-        cell_contents = ocr(cell_crop, can_be_operator=can_be_operator, generate_golden_records=generate_ocr_golden_records)
-        values.append(cell_contents)
+        ocr_worker_tasks.append((cell_crop, can_be_operator, generate_ocr_golden_records))
+    
+    print("Parallel start")
+    multiprocessing.set_start_method('spawn', force=True)
+    with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
+        values.extend(list(executor.map(ocr_worker, ocr_worker_tasks)))
+    print("Parallel end")
     return values
 
 def reconstruct_grid(grid_tiles):
